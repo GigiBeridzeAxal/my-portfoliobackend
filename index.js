@@ -1,9 +1,51 @@
+const dotenv = require('dotenv')
+dotenv.config()
 const express = require('express')
 const app = express()
+app.use(express.json())
 const nodemailer = require('nodemailer');
 const router = express.Router()
 const cors = require('cors')
+const bcrypt = require('bcrypt')
 
+
+app.use(cors({
+    origin:'*'
+}))
+
+const loggermiddleware = async(req,res,next) => {
+
+
+
+    const {hashed} = req.body
+    if (!hashed) {
+        console.log("Hashed is undefined, returning error");
+        return res.status(400).json({ error: "Missing hashed value" });
+    }
+
+
+
+
+   const matched = await bcrypt.compare(process.env.SECRET , hashed)
+   if(matched){
+    next()
+   
+   }else{
+    res.status(400).json({ error: "Missing hashed value" });
+   }
+
+
+   
+
+    
+
+
+
+
+
+}
+
+app.use(loggermiddleware)
 
 
 // Create a transporter object
@@ -15,15 +57,13 @@ pass: 'nkrf ouno rhkx uukc'
 }
 });
 
-app.use(cors({
-    origin:'*'
-}))
+
 
 
 
 // Define the email options
 
-app.use(express.json())
+
 
 // Send the email
 router.post('/sendmessage' , (req,res) => {
